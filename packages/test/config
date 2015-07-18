@@ -1,0 +1,6 @@
+{
+    "name": "test",
+    "timeout": 4,
+    "script": "./packages/test/script.py",
+    "parameters": {"name":"Will", "age":28}
+}
