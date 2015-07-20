@@ -34,6 +34,7 @@ The config file should be a json dictionary such as the following:
 }
 
 Parameter | Required | Description
+----------|---------|-------------------------------
 id | Yes | This is the package name, usually an acronym, and should match the package folder name
 description | Yes | A fuller description of the package
 timeout | Yes | The timeout, in seconds, of the package. ApMan will kill the package if it exceeds this time.
