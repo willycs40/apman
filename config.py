@@ -1,1 +1,0 @@
-SOME_PARAM = 'WCS'

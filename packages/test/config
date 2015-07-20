@@ -1,6 +1,6 @@
 {
-    "name": "test",
     "id":"test",
+    "description": "test",
     "timeout": 4,
     "command": "venv/Scripts/python script.py",
     "parameters": {"name":"Will", "age":28}

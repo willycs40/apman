@@ -66,7 +66,7 @@ def main():
         raise
     
     # Check all required parameters are present in the configuration
-    required_parameters = ['id','name','command', 'timeout']
+    required_parameters = ['id','description','command', 'timeout']
     missing_parameters = []
     for param in required_parameters:
         if param not in package:
