@@ -2,6 +2,20 @@ import subprocess
 import threading
 import sys
 import json
+import os
+import shlex
+
+class cd:
+    """Context manager for changing the current working directory"""
+    def __init__(self, newPath):
+        self.newPath = os.path.expanduser(newPath)
+
+    def __enter__(self):
+        self.savedPath = os.getcwd()
+        os.chdir(self.newPath)
+
+    def __exit__(self, etype, value, traceback):
+        os.chdir(self.savedPath)
 
 class RunScript(threading.Thread):
     def __init__(self, cmd, timeout):
@@ -31,49 +45,66 @@ class RunScript(threading.Thread):
 
 def main():
 
-    # Get config script location
-    try:
-        config_path = sys.argv[1]
-    except:
-        print("master.py expects the path to a configuration script as the first argument")
-        raise
-    
-    # Load config object
-    try:
-        with open(config_path,'r') as file:
-            config = json.load(file)
-    except:
-        print("Error loading configuration script. Check path and that script is valid json")
-        raise
-    
-    # Load config parameters
-    try:
-        package_name = config['name']
-        script_path = config['script']
-        script_parameters = config['parameters']
-        timeout = config['timeout']
-    except:
-        print("Error loading config settings. Please check config file is complete.")   
-        raise
+    # Print Diagnostic Information
+    print("Running ApMan with python executable location: {}".format(sys.prefix))
 
-    # Begin script execution
-    print("Starting package: {}".format(package_name))
-    
-    # Call the script thread
-    script_thread = RunScript(['python', script_path, str(script_parameters)], timeout)
-    script_thread.Run()
-    
-    print("Packaged execution finished.")
-    
-    if script_thread.script_timed_out == True:
-        print('Script timed out')
-    elif script_thread.script_exceptioned == True:
-        print("Script raised an exception")
-    else:
-        print("Script finished successfully")
+    print("Loading package...")
+    print('    Reading package configuration...')
+    # Get package configuration file location
+    try:
+        package_path = sys.argv[1]
+    except:
+        print("Program expects the path to a configuration script as the first argument")
+        raise
         
-    print("Output:",script_thread.out)
-    print("Errors:",script_thread.err)
+    # Load package configuration file
+    try:
+        with open(package_path,'r') as file:
+            package = json.load(file)
+    except:
+        print("Error loading the package configuration script. Check the supplied path and verify is valid json (could use http://jsonlint.com/).")
+        raise
+    
+    # Check all required parameters are present in the configuration
+    required_parameters = ['id','name','command', 'timeout']
+    missing_parameters = []
+    for param in required_parameters:
+        if param not in package:
+            missing_parameters.append(param)
+    if len(missing_parameters)>0:
+        raise Exception("Parameters {} missing from package configuration".format(str(missing_parameters)))
+    
+    # Get config path and work from there...
+    package['absolute_path'] = os.path.abspath(package_path)
+    package['directory'] = os.path.dirname(package['absolute_path'])
+    
+    print("    Switching to package directory... {}".format(package['directory']))   
+    
+    # Work from package directory
+    with cd(package['directory']):
+
+        # Begin script execution
+        print("    Starting package ({}), with time-out ({} seconds), command ({})".format(package['id'],package['timeout'],package['command']))
+        print("    Running..."),
+        
+        # Split the package command, add on the parameters, if they exist, then kick off the thread
+        command = shlex.split(package['command'])
+        if 'parameters' in package:
+            command.append(str(package['parameters']))
+        script_thread = RunScript(command, package['timeout'])
+        script_thread.Run()
+        
+        print("done")
+
+        if script_thread.script_timed_out == True:
+            print('    Script timed out')
+        elif script_thread.script_exceptioned == True:
+            print("    Script raised an exception")
+        else:
+            print("    Script finished successfully")
+            
+        print("Output:",script_thread.out)
+        print("Errors:",script_thread.err)
         
 if __name__ == '__main__':
     main()
