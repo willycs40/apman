@@ -14,16 +14,16 @@ Packages are constructed as a folder and configuration file containing all comma
     - mkdir churn
 
 * Within this Create a virtual environment folder (venv) within this folder.
-	virtualenv venv
+    - virtualenv venv
 * Activate this virtual environment, and install any necessary libraries.
-	venv/Scripts/activate.bat
-	pip install nltk
+    - venv/Scripts/activate.bat
+    - pip install nltk
 * Create a requirements file to store a record of any libraries installed.
-	pip freeze > requirements.txt
+    - pip freeze > requirements.txt
 * Create the analytic script:
-	notepad script.py
+    - notepad script.py
 * Create the package configuration file.
-	notepad config
+    - notepad config
 
 The config file should be a json dictionary such as the following:
 
@@ -46,9 +46,9 @@ parameters | No | A json-formatted dictionary of parameters to pass to the comma
 ### Running a package
 
 * Packages can be run outside of apman simply by cd'ing to the config file directory, and running the command given in the configuration file 'command' parameter, followed optionally by the dictionary given in the 'parameters' parameter, surrounded by single quotes. e.g.
-	venv/Script/python script.py '{"name":"Will","age":28}'
+    - venv/Script/python script.py '{"name":"Will","age":28}'
 
 * One can test run packages using ApMan, by calling apman.py with the package configuration script as the first argument:
-	python apman.py packages/test/config
+    - python apman.py packages/test/config
 * ApMan itself should run in a virtual environment, therefore the following syntax maybe preferable:
-	../venv/Scripts/python apman.py packages/test/config
+    - ../venv/Scripts/python apman.py packages/test/config
