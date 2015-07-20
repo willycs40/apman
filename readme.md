@@ -10,8 +10,8 @@ Packages are constructed as a folder and configuration file containing all comma
 
 * Create a folder, named after the analytic e.g. churn (preferably within the 'packages' folder)
 
-cd packages
-mkdir churn
+- cd packages
+- mkdir churn
 
 * Within this Create a virtual environment folder (venv) within this folder.
 	virtualenv venv
