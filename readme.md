@@ -9,19 +9,21 @@ Packages are constructed as a folder and configuration file containing all comma
 ### Creating a package
 
 * Create a folder, named after the analytic e.g. churn (preferably within the 'packages' folder)
-	cd packages
-	mkdir churn
+
+    - cd packages
+    - mkdir churn
+
 * Within this Create a virtual environment folder (venv) within this folder.
-	virtualenv venv
+    - virtualenv venv
 * Activate this virtual environment, and install any necessary libraries.
-	venv/Scripts/activate.bat
-	pip install nltk
+    - venv/Scripts/activate.bat
+    - pip install nltk
 * Create a requirements file to store a record of any libraries installed.
-	pip freeze > requirements.txt
+    - pip freeze > requirements.txt
 * Create the analytic script:
-	notepad script.py
+    - notepad script.py
 * Create the package configuration file.
-	notepad config
+    - notepad config
 
 The config file should be a json dictionary such as the following:
 
@@ -34,6 +36,7 @@ The config file should be a json dictionary such as the following:
 }
 
 Parameter | Required | Description
+----------|---------|-------------------------------
 id | Yes | This is the package name, usually an acronym, and should match the package folder name
 description | Yes | A fuller description of the package
 timeout | Yes | The timeout, in seconds, of the package. ApMan will kill the package if it exceeds this time.
@@ -43,9 +46,9 @@ parameters | No | A json-formatted dictionary of parameters to pass to the comma
 ### Running a package
 
 * Packages can be run outside of apman simply by cd'ing to the config file directory, and running the command given in the configuration file 'command' parameter, followed optionally by the dictionary given in the 'parameters' parameter, surrounded by single quotes. e.g.
-	venv/Script/python script.py '{"name":"Will","age":28}'
+    - venv/Script/python script.py '{"name":"Will","age":28}'
 
 * One can test run packages using ApMan, by calling apman.py with the package configuration script as the first argument:
-	python apman.py packages/test/config
+    - python apman.py packages/test/config
 * ApMan itself should run in a virtual environment, therefore the following syntax maybe preferable:
-	../venv/Scripts/python apman.py packages/test/config
+    - ../venv/Scripts/python apman.py packages/test/config
