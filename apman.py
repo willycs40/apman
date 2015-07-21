@@ -4,6 +4,9 @@ import sys
 import json
 import os
 import shlex
+from config import Config
+from models import User
+from database import db_session
 
 class cd:
     """Context manager for changing the current working directory"""
@@ -105,6 +108,13 @@ def main():
             
         print("Output:",script_thread.out)
         print("Errors:",script_thread.err)
+        
+    #u = User('will', 'will@apressci.co.uk')
+    #db_session.add(u)
+    #db_session.commit()
+    
+    u2 = User.query.filter(User.name=='will').first()
+    print(u2.email)
         
 if __name__ == '__main__':
     main()
