@@ -5,7 +5,8 @@ import json
 import os
 import shlex
 from config import Config
-from models import User
+from models import LogEntry as main_log
+from models import PackageLogEntry as package_log
 from database import db_session
 
 class cd:
@@ -50,6 +51,7 @@ def main():
 
     # Print Diagnostic Information
     print("Running ApMan with python executable location: {}".format(sys.prefix))
+    main_log.add('Testing helper')
 
     print("Loading package...")
     print('    Reading package configuration...')
@@ -88,6 +90,7 @@ def main():
 
         # Begin script execution
         print("    Starting package ({}), with time-out ({} seconds), command ({})".format(package['id'],package['timeout'],package['command']))
+        package_run_log = package_log.start(package['id'], package['timeout'])
         print("    Running..."),
         
         # Split the package command, add on the parameters, if they exist, then kick off the thread
@@ -98,23 +101,19 @@ def main():
         script_thread.Run()
         
         print("done")
+        
+        package_run_log.stdout = script_thread.out
+        package_run_log.stderr = script_thread.err
 
         if script_thread.script_timed_out == True:
-            print('    Script timed out')
+            package_run_log.timed_out = True
         elif script_thread.script_exceptioned == True:
-            print("    Script raised an exception")
-        else:
-            print("    Script finished successfully")
+            package_run_log.errored = True
+            
+        package_log.finish(package_run_log)
             
         print("Output:",script_thread.out)
         print("Errors:",script_thread.err)
-        
-    #u = User('will', 'will@apressci.co.uk')
-    #db_session.add(u)
-    #db_session.commit()
-    
-    u2 = User.query.filter(User.name=='will').first()
-    print(u2.email)
         
 if __name__ == '__main__':
     main()

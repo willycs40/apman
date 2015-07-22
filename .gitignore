@@ -63,3 +63,4 @@ target/
 # packages
 venv
 *.sqlite
+*.exe
