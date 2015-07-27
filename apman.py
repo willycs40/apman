@@ -111,9 +111,11 @@ def main():
             package_run_log.errored = True
             
         package_log.finish(package_run_log)
-            
-        print("Output:",script_thread.out)
-        print("Errors:",script_thread.err)
+        
+        print("Timed Out:", script_thread.script_timed_out)
+        print("Errored Out:", script_thread.script_exceptioned)
+        print("Output:\n{}".format(script_thread.out))
+        print("Errors:\n{}".format(script_thread.err))
         
 if __name__ == '__main__':
     main()

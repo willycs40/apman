@@ -10,6 +10,7 @@ def main():
     sys.stdout.write("out test")
     print >> sys.stderr, ("err test")
     sys.stdout.flush()
+    sys.stderr.flush()
     time.sleep(1)
     print("there")
     print(SCRIPT_PARAMETERS['name'])
