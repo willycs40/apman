@@ -1,7 +1,11 @@
 {
     "id":"test",
     "description": "test",
-    "timeout": 1,
+    "timeout": 10,
     "command": "venv/Scripts/python script.py",
+    "notification-emails": ["will.cubitt-smith@royalmail.com"],
+    "email-on-success": "True",
+    "email-on-timeout": "True",
+    "email-on-exception": "True",
     "parameters": {"name":"Will", "age":28}
 }

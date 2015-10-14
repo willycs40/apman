@@ -4,10 +4,15 @@ import sys
 import json
 import os
 import shlex
+import logging
 from config import Config
 from models import LogEntry as main_log
 from models import PackageLogEntry as package_log
 from database import db_session
+
+import smtplib
+from email.mime.text import MIMEText
+
 
 class cd:
     """Context manager for changing the current working directory"""
@@ -50,27 +55,27 @@ class RunScript(threading.Thread):
 def main():
 
     # Print Diagnostic Information
-    print("Running ApMan with python executable location: {}".format(sys.prefix))
+    logging.info("Running ApMan with python executable location: {}".format(sys.prefix))
     main_log.add('Testing helper')
 
-    print("Loading package...")
-    print('    Reading package configuration...')
     # Get package configuration file location
     try:
         package_path = sys.argv[1]
     except:
-        print("Program expects the path to a configuration script as the first argument")
-        raise
+        logging.error("Program expects the path to a configuration script as the first argument")
+        exit()
         
     # Load package configuration file
+    logging.debug('Opening config file')
     try:
         with open(package_path,'r') as file:
             package = json.load(file)
     except:
-        print("Error loading the package configuration script. Check the supplied path and verify is valid json (could use http://jsonlint.com/).")
-        raise
+        logging.error("Error loading the package configuration script. Check the supplied path and verify is valid json (could use http://jsonlint.com/).")
+        exit()
     
     # Check all required parameters are present in the configuration
+    logging.debug('Reading config file')
     required_parameters = ['id','description','command', 'timeout']
     missing_parameters = []
     for param in required_parameters:
@@ -78,20 +83,23 @@ def main():
             missing_parameters.append(param)
     if len(missing_parameters)>0:
         raise Exception("Parameters {} missing from package configuration".format(str(missing_parameters)))
-    
+
     # Get config path and work from there...
     package['absolute_path'] = os.path.abspath(package_path)
     package['directory'] = os.path.dirname(package['absolute_path'])
     
-    print("    Switching to package directory... {}".format(package['directory']))   
+    ####################################
+    ###        Run the Package       ###
+    ####################################
+
+    logging.debug("Switching to package directory... {}".format(package['directory']))   
     
     # Work from package directory
     with cd(package['directory']):
 
         # Begin script execution
-        print("    Starting package ({}), with time-out ({} seconds), command ({})".format(package['id'],package['timeout'],package['command']))
+        logging.info("Starting package ({}), with time-out ({} seconds), command ({})".format(package['id'],package['timeout'],package['command']))
         package_run_log = package_log.start(package['id'], package['timeout'])
-        print("    Running..."),
         
         # Split the package command, add on the parameters, if they exist, then kick off the thread
         command = shlex.split(package['command'])
@@ -100,22 +108,52 @@ def main():
         script_thread = RunScript(command, package['timeout'])
         script_thread.Run()
         
-        print("done")
-        
-        package_run_log.stdout = script_thread.out
-        package_run_log.stderr = script_thread.err
+        logging.info("Package Execution Complete")
+    
+    # Update the package execution log
+    package_run_log.stdout = script_thread.out
+    package_run_log.stderr = script_thread.err
+    package_run_log.timed_out = script_thread.script_timed_out
+    package_run_log = script_thread.script_exceptioned        
+    package_log.finish(package_run_log)
+    
+    # Log results to standard out assuming interactive run
+    logging.debug("Timed Out: {}".format(str(script_thread.script_timed_out)))
+    logging.debug("Errored Out: {}".format(str(script_thread.script_exceptioned)))
+    logging.debug("Standard Out:\n{}".format(script_thread.out))
+    logging.debug("Standard Error:\n{}".format(script_thread.err))
 
-        if script_thread.script_timed_out == True:
-            package_run_log.timed_out = True
-        elif script_thread.script_exceptioned == True:
-            package_run_log.errored = True
-            
-        package_log.finish(package_run_log)
-        
-        print("Timed Out:", script_thread.script_timed_out)
-        print("Errored Out:", script_thread.script_exceptioned)
-        print("Output:\n{}".format(script_thread.out))
-        print("Errors:\n{}".format(script_thread.err))
-        
+    ####################################
+    ###      Notification Emails     ###
+    ####################################
+
+    email_to = Config.NOTIFICATION_EMAILS_TO
+    email_from = Config.NOTIFICATION_EMAILS_FROM
+
+    # Add any package specific email addresses
+    if 'notification-emails' in package:
+        email_to.append(package['notification-emails'])
+
+    msg = MIMEText('Message text')
+    msg['Subject'] = 'Some Subject'
+    msg['From'] = email_from
+    msg['To'] = ";".join(email_to)
+
+    logging.debug(msg.as_string())
+
+    try:
+        s = smtplib.SMTP('localhost')
+        s.sendmail(email_from, [email_to], msg.as_string())
+        s.quit()
+    except:
+        pass
+
 if __name__ == '__main__':
+
+    # Calling directly so set up logging
+    logging.basicConfig(
+        format='%(asctime)s|%(levelname)s|%(message)s',
+        datefmt='%m/%d/%Y %I:%M:%S',
+        level=logging.DEBUG)
+    
     main()
