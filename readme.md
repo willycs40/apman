@@ -1,7 +1,8 @@
-# ApMan
-## Analytics Package Manager
+## ApMan (Analytics Package Manager)
 
-### Introduction
+[![Build Status](https://travis-ci.org/willycs40/apman.svg?branch=master)](https://travis-ci.org/willycs40/apman)
+
+### Description
 ApMan is a python wrapper which can be used to call scripts (i.e. analytics such as customer churn, next best product) in a standardised and robust manner. 
 
 Packages are constructed as a folder and configuration file containing all commands, parameters and virtual environments needed for the analytic. ApMan is then used to run these packages robustly, catching any handled or unhandled exceptions, as well as the package result and stout/stedd, and storing all this information in a central log.
