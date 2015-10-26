@@ -1,25 +1,29 @@
 #!/usr/bin/env python
-import sys
+
 import logging
 import traceback
+import argparse
 from packagemanager import PackageManager
 
 def main():
 
-    # Print Diagnostic Information
-    logging.info("Running ApMan with python executable location: {}".format(sys.prefix))
+    # logging setup
+    logging.basicConfig(
+        format='%(asctime)s|%(levelname)s|%(message)s',
+        datefmt='%m/%d/%Y %I:%M:%S',
+        level=logging.DEBUG)
 
-    # Retrieve package config file path as first argument
-    try:
-        package_path = sys.argv[1]
-    except:
-        logging.error("ApMan expects package configuration path as the first argument.")
-        exit()
-        
+    # Some parser set up
+    parser = argparse.ArgumentParser(description='Run an ApMan Package.')
+    parser.add_argument("config", help="Path to the configuration file of the ApMan Package you wish to run.")
+    parser.add_argument("-nn", "--no_notify", help="Do not send email notifications", action="store_true")
+    parser.add_argument("-nl","--no_log", help="Do not log to ApMan DB log", action="store_true")
+    args = parser.parse_args()
+
     # Load package configuration file
-    logging.info('Loading package configuration file: {}'.format(package_path))
+    logging.info('Loading package configuration file: {}'.format(args.config))
     try:
-    	package = PackageManager(package_path)
+    	package = PackageManager(args.config)
     except:
     	logging.error("Could not load package config file:\n{}".format(traceback.format_exc()))
     	exit()
@@ -27,19 +31,13 @@ def main():
     # Run the package
     logging.info("Starting package ({}), with time-out ({} seconds), command ({})".format(package.parameters['id'],package.parameters['timeout'],package.parameters['command']))
     try:
-    	package.run_package(log_run_to_db=False, send_notification_emails=True)
+    	package.run_package(log_run_to_db=not args.no_log, send_notification_emails=not args.no_notify)
     except:
     	logging.error("Problem running package:\n{}".format(traceback.format_exc()))
     	exit()
 
-    logging.info("Run Complete.")
+    logging.info("Package ({}) complete".format(package.parameters['id']))
 
 if __name__ == '__main__':
-
-    # Calling directly so set up logging
-    logging.basicConfig(
-        format='%(asctime)s|%(levelname)s|%(message)s',
-        datefmt='%m/%d/%Y %I:%M:%S',
-        level=logging.DEBUG)
     
     main()

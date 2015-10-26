@@ -65,18 +65,26 @@ class PackageManager():
         """Record package start to the central ApMan database log."""
 
         # store the returned log record so we can use it to update the database in '_log_package_end_to_db()'
-        self._db_log_record = PackageLogEntry.start(self.parameters['id'], self.parameters['timeout'])
+        try:
+            self._db_log_record = PackageLogEntry.start(self.parameters['id'], self.parameters['timeout'])
+        except:
+            logging.error("Cannot log package start to ApMan DB Log.")
+            #raise Exception("Cannot log package execution to ApMan DB Log.")
 
     def _log_package_end_to_db(self):
         """Record package end to the central apman database log."""
 
         # note we are using self._db_log_record, stored by' _log_package_start_to_db()'
-        self._db_log_record.stdout = self._script_thread.out
-        self._db_log_record.stderr = self._script_thread.err
-        self._db_log_record.timed_out = self._script_thread.script_timed_out
-        self._db_log_record.errored = self._script_thread.script_exceptioned    
+        try:
+            self._db_log_record.stdout = self._script_thread.out
+            self._db_log_record.stderr = self._script_thread.err
+            self._db_log_record.timed_out = self._script_thread.script_timed_out
+            self._db_log_record.errored = self._script_thread.script_exceptioned    
 
-        PackageLogEntry.finish(self._db_log_record)
+            PackageLogEntry.finish(self._db_log_record)
+        except:
+            logging.error("Cannot log package end to ApMan DB Log.")
+            #raise Exception("Cannot log package execution to ApMan DB Log.")
 
     def _get_email_text(self):
         """Function to return readable summary and detail text (subject and body) report of package execution."""
@@ -116,7 +124,12 @@ class PackageManager():
             email_to.extend(self.parameters['notification-emails'])
 
         subject, body = self._get_email_text()
-        send_email(subject, body, email_from, email_to, Config.SMTP_ADDRESS)
+
+        try:
+            send_email(subject, body, email_from, email_to, Config.SMTP_ADDRESS)
+        except:
+            logging.error("Unable to send notification email")
+            #raise Exception("Problem sending email.")
 
     def run_package(self, log_run_to_db=None, send_notification_emails=None, print_notification=True): 
         
