@@ -10,8 +10,7 @@ from models import LogEntry as main_log
 from models import PackageLogEntry as package_log
 from database import db_session
 
-import smtplib
-from email.mime.text import MIMEText
+import email
 
 
 class cd:
@@ -134,19 +133,7 @@ def main():
     if 'notification-emails' in package:
         email_to.extend(package['notification-emails'])
 
-    msg = MIMEText('Message text')
-    msg['Subject'] = 'Some Subject'
-    msg['From'] = email_from
-    msg['To'] = ", ".join(email_to)
-
-    logging.debug(msg.as_string())
-
-    try:
-        s = smtplib.SMTP(Config.EMAIL_SMTP_ADDRESS)
-        s.sendmail(email_from, [email_to], msg.as_string())
-        s.quit()
-    except:
-        pass
+    email.send_email('email subject', 'some test', email_from, email_to, Config.EMAIL_SMTP_ADDRESS)
 
 if __name__ == '__main__':
 

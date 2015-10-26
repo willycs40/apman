@@ -1,0 +1,17 @@
+* move to a yaml config file. specify this as package data so it gets installed with the lib
+* or just leave it as a config.py for now?
+* remove the concept of the data model stuff? e.g. models.py
+* add tests with various test packages
+	* where should the logging go?
+	* things to test:
+		* a timeout package
+		* an exception package
+		* a successful package
+		* emailing on success
+			* to global and package parties
+		* test the cd function
+		* test runscript...
+		* make logging more best practice
+* move email to email.py
+* add a 'scripts' command, to allow the use of apman as a command line tool (when in the virtualenv) - then jobs can be scheduled with it
+* 
