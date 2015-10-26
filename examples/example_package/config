@@ -3,7 +3,7 @@
     "description": "test",
     "timeout": 10,
     "command": "venv/Scripts/python script.py",
-    "notification-emails": ["will.cubitt-smith@royalmail.com"],
+    "notification-emails": ["will.cubitt-smith@email.com"],
     "email-on-success": "True",
     "email-on-timeout": "True",
     "email-on-exception": "True",

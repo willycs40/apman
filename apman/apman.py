@@ -132,17 +132,17 @@ def main():
 
     # Add any package specific email addresses
     if 'notification-emails' in package:
-        email_to.append(package['notification-emails'])
+        email_to.extend(package['notification-emails'])
 
     msg = MIMEText('Message text')
     msg['Subject'] = 'Some Subject'
     msg['From'] = email_from
-    msg['To'] = ";".join(email_to)
+    msg['To'] = ", ".join(email_to)
 
     logging.debug(msg.as_string())
 
     try:
-        s = smtplib.SMTP('localhost')
+        s = smtplib.SMTP(Config.EMAIL_SMTP_ADDRESS)
         s.sendmail(email_from, [email_to], msg.as_string())
         s.quit()
     except:
