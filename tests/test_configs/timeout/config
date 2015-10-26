@@ -1,0 +1,6 @@
+{
+    "id":"test",
+    "description": "test",
+    "timeout": 1,
+    "command": "python script.py"
+}

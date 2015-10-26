@@ -1,0 +1,7 @@
+{
+    "id":"test",
+    "description": "test",
+    "timeout": 3,
+    "command": "python script.py",
+    "package_parameters": {"name":"Will", "age":28}
+}

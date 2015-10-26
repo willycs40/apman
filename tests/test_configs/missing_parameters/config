@@ -1,0 +1,5 @@
+{
+    "description": "test",
+    "timeout": 3,
+    "command": "python script.py"
+}

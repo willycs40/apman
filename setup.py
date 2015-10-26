@@ -7,7 +7,6 @@ import apman
 
 here = os.path.abspath(os.path.dirname(__file__))
 
-
 class PyTest(TestCommand):
 
     def finalize_options(self):

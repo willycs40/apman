@@ -1,8 +1,8 @@
 {
     "id":"test",
     "description": "test",
-    "timeout": 10,
-    "command": "venv/Scripts/python script.py",
+    "timeout": 3,
+    "command": "python script.py",
     "notification-emails": ["will.cubitt-smith@email.com"],
     "email-on-success": "True",
     "email-on-timeout": "True",
