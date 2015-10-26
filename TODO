@@ -1,10 +1,5 @@
-* move to a yaml config file. specify this as package data so it gets installed with the lib
-* or just leave it as a config.py for now?
-* remove the concept of the data model stuff? e.g. models.py
 * add tests with various test packages
-	* where should the logging go?
 	* things to test:
-		* a successful package
 		* emailing on success
 			* to global and package parties
 		* test the cd function

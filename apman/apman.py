@@ -20,6 +20,11 @@ def main():
     parser.add_argument("-nl","--no_log", help="Do not log to ApMan DB log", action="store_true")
     args = parser.parse_args()
 
+    send_notification_emails = not args.no_notify
+    log_run_to_db=not args.no_log
+
+    print send_notification_emails
+
     # Load package configuration file
     logging.info('Loading package configuration file: {}'.format(args.config))
     try:
@@ -31,12 +36,12 @@ def main():
     # Run the package
     logging.info("Starting package ({}), with time-out ({} seconds), command ({})".format(package.parameters['id'],package.parameters['timeout'],package.parameters['command']))
     try:
-    	package.run_package(log_run_to_db=not args.no_log, send_notification_emails=not args.no_notify)
+    	package.run_package(log_run_to_db=log_run_to_db, send_notification_emails=send_notification_emails)
     except:
     	logging.error("Problem running package:\n{}".format(traceback.format_exc()))
     	exit()
 
-    logging.info("Package ({}) complete".format(package.parameters['id']))
+    logging.info(package.get_result())
 
 if __name__ == '__main__':
     

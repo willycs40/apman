@@ -101,13 +101,12 @@ class PackageManager():
         body = """
         ID: {}
         Timeout: {}
-        Parameters: {}
         Start: {}
         End: {}
         Result: {}
         Standard Out:\n{}
         Standard Error:\n{}
-        """.format(self.parameters['id'], self.parameters['timeout'], self.parameters['parameters'], str(self._script_thread.start_timestamp), str(self._script_thread.end_timestamp), text_result, self._script_thread.out, self._script_thread.err)
+        """.format(self.parameters['id'], self.parameters['timeout'], str(self._script_thread.start_timestamp), str(self._script_thread.end_timestamp), text_result, self._script_thread.out, self._script_thread.err)
 
         return subject, body
 
@@ -129,7 +128,10 @@ class PackageManager():
             send_email(subject, body, email_from, email_to, Config.SMTP_ADDRESS)
         except:
             logging.error("Unable to send notification email")
-            #raise Exception("Problem sending email.")
+
+    def get_result(self):
+        result, __ = self._get_email_text()
+        return result
 
     def run_package(self, log_run_to_db=None, send_notification_emails=None, print_notification=True): 
         
@@ -160,5 +162,4 @@ class PackageManager():
 
         if print_notification:
             subject, body = self._get_email_text()
-            logging.debug(subject)
             logging.debug(body)

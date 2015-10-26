@@ -3,14 +3,10 @@ import os
 from apman.packagemanager import PackageManager
 from apman.utilities import cd
 
-
 here = os.path.dirname(os.path.abspath(__file__))
 
 # content of test_class.py
 class TestClass:
-
-#    def test_utilities_cd(self):
-#        os.getcwd()
 
     def test_missing_package_configs(self):
 
@@ -46,3 +42,13 @@ class TestClass:
         assert package._script_thread.script_exceptioned == False
         assert package._script_thread.script_timed_out == False
 
+    def test_email_on_error(self, monkeypatch):
+        config_path = os.path.join(here,'test_configs','error','config')
+        package = PackageManager(config_path)
+        package.run_package(log_run_to_db = False, send_notification_emails = True, print_notification = False)
+
+        def mockreturn():
+            return True
+
+        monkeypatch.setattr(package, '_send_notification_email', mockreturn)
+        # now check it tries to call package._send_notification_email

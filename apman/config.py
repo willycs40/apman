@@ -8,7 +8,7 @@ class Config:
 
     LOG_RUN_TO_DB = True
     SEND_NOTIFICATION_EMAILS = True
-    NOTIFY_SUCCESS = False
+    NOTIFY_SUCCESS = True
 
     NOTIFICATION_EMAILS_FROM = 'email@email.com'
     NOTIFICATION_EMAILS_TO = ['email@email.com'] 
