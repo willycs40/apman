@@ -3,7 +3,7 @@
 import logging
 import traceback
 import argparse
-from packagemanager import PackageManager
+from apman.packagemanager import PackageManager
 
 def main():
 
@@ -22,8 +22,6 @@ def main():
 
     send_notification_emails = not args.no_notify
     log_run_to_db=not args.no_log
-
-    print send_notification_emails
 
     # Load package configuration file
     logging.info('Loading package configuration file: {}'.format(args.config))

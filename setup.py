@@ -36,6 +36,7 @@ setup(
     include_package_data=True,
     platforms='any',
     test_suite='tests.test_apman',
+    scripts=['scripts/apman'],
     classifiers = [
         'Programming Language :: Python',
         'Development Status :: 3 - Alpha',
