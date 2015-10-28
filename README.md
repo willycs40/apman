@@ -3,29 +3,23 @@
 [![Build Status](https://travis-ci.org/willycs40/apman.svg?branch=master)](https://travis-ci.org/willycs40/apman)
 
 ### Description
-ApMan is a python wrapper which can be used to call scripts (i.e. analytics such as customer churn, next best product) in a standardised and robust manner. 
+ApMan is a python wrapper which can be used to call other python applications (e.g. analytics packages like a customer churn model) in a standardised, robust, and logged manner - and email notifications in the event of an issue. 
 
-Packages are constructed as a folder and configuration file containing all commands, parameters and virtual environments needed for the analytic. ApMan is then used to run these packages robustly, catching any handled or unhandled exceptions, as well as the package result and stout/stedd, and storing all this information in a central log.
+When ApMan is used to run a package:
+ * The initiation of the package is recorded to a central log
+ * The package is run in a seperate process, started by ApMan
+ * Typically, inside this process, a package dedicated python virtual environment is activated, and then the package work is done.
+ * If the package goes over a pre-configured package timeout, the process is killed, and the timeout result is recorded to the central log.
+ * If the package causes an unhandled exception, the process is killed, and the exception result recorded to the central log.
+ * On successful completion, the success result is recorded to the central log.
+ * In all cases, all logging (stdout/stderr) from the package is also recorded to the central log.
+ * Finally, in the event of timeout or exception (or on success, if so configured) ApMan emails the configured recipients.
 
 ### Creating a package
+ * Packages are constructed as Python applications, with an additional 'apman' configuration file. 
+ * It is also expected and supported that each package should have a requirements.txt file which can be used to build a dedicated virtual environment. The apman config is then updated to direct ApMan to use this environment on execution.
 
-* Create a folder, named after the analytic e.g. churn (preferably within the 'packages' folder)
-
-    - cd packages
-    - mkdir churn
-
-* Within this Create a virtual environment folder (venv) within this folder.
-    - virtualenv venv
-* Activate this virtual environment, and install any necessary libraries.
-    - venv/Scripts/activate.bat
-    - pip install nltk
-* Create a requirements file to store a record of any libraries installed.
-    - pip freeze > requirements.txt
-* Create the analytic script:
-    - notepad script.py
-* Create the package configuration file.
-    - notepad config
-
+### ApMan Config file
 The config file should be a json dictionary such as the following:
 
 {
@@ -33,6 +27,7 @@ The config file should be a json dictionary such as the following:
     "description":"this is a test package",
     "timeout": 4,
     "command": "venv/Scripts/python script.py",
+    "notify-success": True
     "parameters": {"name":"Will", "age":28}
 }
 
@@ -46,10 +41,5 @@ parameters | No | A json-formatted dictionary of parameters to pass to the comma
 
 ### Running a package
 
-* Packages can be run outside of apman simply by cd'ing to the config file directory, and running the command given in the configuration file 'command' parameter, followed optionally by the dictionary given in the 'parameters' parameter, surrounded by single quotes. e.g.
-    - venv/Script/python script.py '{"name":"Will","age":28}'
-
-* One can test run packages using ApMan, by calling apman.py with the package configuration script as the first argument:
-    - python apman.py packages/test/config
-* ApMan itself should run in a virtual environment, therefore the following syntax maybe preferable:
-    - ../venv/Scripts/python apman.py packages/test/config
+* Once installed, ApMan can be called using the 'apman_run.py' command line tool.
+* To run a package call 'apman_run.py config_file'.
