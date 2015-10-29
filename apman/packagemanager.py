@@ -86,60 +86,11 @@ class PackageManager():
             logging.error("Cannot log package end to ApMan DB Log.")
             #raise Exception("Cannot log package execution to ApMan DB Log.")
 
-    def _get_email_text(self):
-        """Function to return readable summary and detail text (subject and body) report of package execution."""
-
-        if self._script_thread.script_timed_out:
-            text_result = "Failed (Timed Out)"
-        elif self._script_thread.script_exceptioned:
-            text_result = "Failed (Runtime Error)"
-        else:
-            text_result = "Completed Successfully"
-
-        subject = "Package ({}) {}".format(self.parameters['id'], text_result)
-
-        body = """
-        ID: {}
-        Timeout: {}
-        Start: {}
-        End: {}
-        Result: {}
-        Standard Out:\n{}
-        Standard Error:\n{}
-        """.format(self.parameters['id'], self.parameters['timeout'], str(self._script_thread.start_timestamp), str(self._script_thread.end_timestamp), text_result, self._script_thread.out, self._script_thread.err)
-
-        return subject, body
-
-    def _send_notification_email(self):
-        """Send an email with package execution details, depending on package result.
-        Whether emails are sent depends on the global and package settings. e.g. send_on_success"""
-
-        # Get the global email addresses
-        email_to = Config.NOTIFICATION_EMAILS_TO
-        email_from = Config.NOTIFICATION_EMAILS_FROM
-
-        # Add any package-specific email addresses
-        if 'notification-emails' in self.parameters:
-            email_to.extend(self.parameters['notification-emails'])
-
-        subject, body = self._get_email_text()
-
-        try:
-            send_email(subject, body, email_from, email_to, Config.SMTP_ADDRESS)
-        except:
-            logging.error("Unable to send notification email")
-
-    def get_result(self):
-        result, __ = self._get_email_text()
-        return result
-
-    def run_package(self, log_run_to_db=None, send_notification_emails=None, print_notification=True): 
+    def run_package(self, log_run_to_db=None): 
         
-        # Set defaults - if caller doesn't specify whether they want database logging and email notification turned on, using the package global defaults
+        # Set defaults - if caller doesn't specify whether they want database logging, then use the package global defaults
         if log_run_to_db is None:
             log_run_to_db = Config.LOG_RUN_TO_DB
-        if send_notification_emails is None:
-            send_notification_emails = Config.SEND_NOTIFICATION_EMAILS
         
         if log_run_to_db:
             logging.debug("Logging package start to DB.")
@@ -155,11 +106,61 @@ class PackageManager():
             logging.debug("Logging package end to DB.")
             self._log_package_end_to_db()
 
-        if send_notification_emails:
-            if self._script_thread.script_timed_out or self._script_thread.script_exceptioned or Config.NOTIFY_SUCCESS:            
-                logging.debug("Sending notification emails.")
-                self._send_notification_email()
+    def get_notification_text(self):
+        """Function to return readable summary and detail text (subject and body) report of package execution."""
 
-        if print_notification:
-            subject, body = self._get_email_text()
-            logging.debug(body)
+        if self._script_thread.script_timed_out:
+            text_result = "failed (timed out)"
+        elif self._script_thread.script_exceptioned:
+            text_result = "failed (runtime error)"
+        else:
+            text_result = "completed successfully"
+
+        summary = "Package ({}) {}".format(self.parameters['id'], text_result)
+
+        # using textwrap.dedent to make it so this literal doesn't have a big indent
+        detail = """\
+ID: {}
+Timeout: {}
+Start: {}
+End: {}
+Result: {}
+Stdout: {}
+Stderr: {}""".format(
+            self.parameters['id']
+            , self.parameters['timeout']
+            , str(self._script_thread.start_timestamp)
+            , str(self._script_thread.end_timestamp)
+            , text_result
+            , self._script_thread.out
+            , self._script_thread.err
+            )
+        
+
+        return summary, detail
+
+    def send_notification_email(self):
+        """Send an email with package execution details, depending on package result.
+        Whether emails are sent depends on the global and package settings. e.g. send_on_success"""
+
+        if self._script_thread.script_timed_out or self._script_thread.script_exceptioned or Config.NOTIFY_SUCCESS:
+
+            logging.debug("Sending notification emails.")
+
+            # Get the global email addresses
+            email_to = Config.NOTIFICATION_EMAILS_TO
+            email_from = Config.NOTIFICATION_EMAILS_FROM
+
+            # Add any package-specific email addresses
+            if 'notification-emails' in self.parameters:
+                email_to.extend(self.parameters['notification-emails'])
+
+            subject, body = self.get_notification_text()
+            send_email(subject, body, email_from, email_to, Config.SMTP_ADDRESS, Config.SMTP_USERNAME, Config.SMTP_PASSWORD)
+            
+            logging.info("Notification emails sent.")
+
+        else:
+            
+            logging.debug("No need to send notification emails.") 
+            

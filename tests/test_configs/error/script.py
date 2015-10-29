@@ -1,3 +1,3 @@
 if __name__ == '__main__':
     
-    return 1/0
+    x = 1/0

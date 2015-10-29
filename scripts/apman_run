@@ -7,19 +7,22 @@ from apman.packagemanager import PackageManager
 
 def main():
 
-    # logging setup
-    logging.basicConfig(
-        format='%(asctime)s|%(levelname)s|%(message)s',
-        datefmt='%m/%d/%Y %I:%M:%S',
-        level=logging.DEBUG)
-
     # Some parser set up
     parser = argparse.ArgumentParser(description='Run an ApMan Package.')
     parser.add_argument("config", help="Path to the configuration file of the ApMan Package you wish to run.")
     parser.add_argument("-nn", "--no_notify", help="Do not send email notifications", action="store_true")
     parser.add_argument("-nl","--no_log", help="Do not log to ApMan DB log", action="store_true")
+    parser.add_argument('-vv', '--debug', help="Print lots of debugging statements", action="store_const", dest="loglevel", const=logging.DEBUG, default=logging.WARNING)
+    parser.add_argument('-v', '--verbose',help="Be verbose - show information messages",action="store_const", dest="loglevel", const=logging.INFO)
     args = parser.parse_args()
 
+    # logging setup
+    logging.basicConfig(
+        format='%(asctime)s|%(levelname)s|%(message)s',
+        datefmt='%m/%d/%Y %I:%M:%S',
+        level=args.loglevel)
+
+    # Spin round these 
     send_notification_emails = not args.no_notify
     log_run_to_db=not args.no_log
 
@@ -28,19 +31,40 @@ def main():
     try:
     	package = PackageManager(args.config)
     except:
-    	logging.error("Could not load package config file:\n{}".format(traceback.format_exc()))
-    	exit()
+    	msg = "ApMan critical error: Could not load package config file. Run in debug mode [-d] to show details."
+        if args.loglevel == logging.DEBUG:
+            logging.exception(msg)
+        else:
+            logging.error(msg)
 
     # Run the package
     logging.info("Starting package ({}), with time-out ({} seconds), command ({})".format(package.parameters['id'],package.parameters['timeout'],package.parameters['command']))
     try:
-    	package.run_package(log_run_to_db=log_run_to_db, send_notification_emails=send_notification_emails)
+    	package.run_package(log_run_to_db=log_run_to_db)
     except:
-    	logging.error("Problem running package:\n{}".format(traceback.format_exc()))
-    	exit()
+    	msg = "ApMan critical error: Problem running package. Run in debug mode [-d] to show details."
+        if args.loglevel == logging.DEBUG:
+            logging.exception(msg)
+        else:
+            logging.error(msg)
 
-    logging.info(package.get_result())
+    # Print the summary
+    summary, detail = package.get_notification_text()
+    logging.info(summary)
+ 
+    # Send email notification unless they are supressed
+    if not args.no_notify:
+        try:
+            package.send_notification_email()
+        except:
+            msg = "ApMan critical error: Failed to send notification emails. Run in debug mode [-d] to show details."
+            if args.loglevel == logging.DEBUG:
+                logging.exception(msg)
+            else:
+                logging.error(msg)           
+
+    # Print the package output
+    logging.debug(detail)
 
 if __name__ == '__main__':
-    
     main()
