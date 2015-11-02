@@ -7,7 +7,6 @@ import logging
 from config import Config
 from models import LogEntry
 from models import PackageLogEntry
-from database import db_session
 from utilities import cd, send_email
 from scriptrunner import ScriptRunner
 

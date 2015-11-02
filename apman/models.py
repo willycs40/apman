@@ -22,7 +22,7 @@ class LogEntry(Base):
 
     def __repr__(self):
         return '<LogEntry %r>' % (self.id)   
-        
+    
 class PackageLogEntry(Base):
     __tablename__ = 'package_log'
     id = Column(Integer, primary_key=True)
@@ -47,10 +47,19 @@ class PackageLogEntry(Base):
         package_log_entry.end_timestamp = datetime.utcnow()
         db_session.add(package_log_entry)
         db_session.commit()        
+
+    @staticmethod
+    def print_last_n(n):
+        query = db_session.query(PackageLogEntry).order_by(PackageLogEntry.start_timestamp).limit(n)
+        logs = query.all()
+
+        for l in logs:
+            print(l)
     
     def __init__(self, package, timeout):
         self.package = package
         self.timeout = timeout
+
 
     def __repr__(self):
         return '<PackageLogEntry %r>' % (self.id)   
