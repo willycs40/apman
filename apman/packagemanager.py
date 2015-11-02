@@ -110,17 +110,17 @@ class PackageManager():
         """Function to return readable summary and detail text (subject and body) report of package execution."""
 
         if self._script_thread.script_timed_out:
-            text_result = "failed (timed out)"
+            text_result = "Failed [Timeout]"
         elif self._script_thread.script_exceptioned:
-            text_result = "failed (runtime error)"
+            text_result = "Failed [Error]"
         else:
-            text_result = "completed successfully"
+            text_result = "Success"
 
-        summary = "Package ({}) {}".format(self.parameters['id'], text_result)
+        summary = "Package ({}) - {}".format(self.parameters['id'], text_result)
 
         # using textwrap.dedent to make it so this literal doesn't have a big indent
         detail = """\
-ID: {}
+Package ID: {}
 Timeout: {}
 Start: {}
 End: {}
@@ -157,7 +157,7 @@ Stderr: {}""".format(
 
             subject, body = self.get_notification_text()
             send_email(subject, body, email_from, email_to, Config.SMTP_ADDRESS, Config.SMTP_USERNAME, Config.SMTP_PASSWORD)
-            
+
             logging.info("Notification emails sent.")
 
         else:
